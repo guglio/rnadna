@@ -1,4 +1,3 @@
-// -Gdo-Gdo-Ado-Ado-Udo-Gro-Gro- ... -Cro-Uro-Uro-Uro-Ur
 $(function() {
   $("#sequenceForm").on('submit',function(e){
     e.preventDefault();
@@ -99,17 +98,32 @@ function sequenceValidation(sequence){
   var linkages = ["o", "s"];
   var seqSplit = sequence.join("").split('');
   var errors = {};
+  var error = 0;
+  // seqSplit.forEach(function(item){
+  //   errors[item] = 0;
+  // });
+  // var n = seqSplit.length();
+  //
+  // for(var i=0;i<n;i+=4){
+  //   var j=i;
+  //
+  //
+  // }
 
-  seqSplit.forEach(function(item){
-    errors[item] = 0;
+  sequence.forEach(function(item){
+    if(modifiers.indexOf(item[0]) < 0 )
+      error++;
+    if(bases.indexOf(item[1]) < 0)
+      error++;
+    if(sugars.indexOf(item[2]) < 0)
+      error++;
+    if(linkages.indexOf(item[3]) < 0)
+      error++;
   });
 
-  sequence.forEach(function(element,i){
+  if(error > 0)
+    $("#sequenceValidation").html("Error in the sequence");
+  // console.log(errors);
 
-
-
-  });
-  console.log(errors);
-
-  return 0;
+  return error;
 };
