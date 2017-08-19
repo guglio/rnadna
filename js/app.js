@@ -22,9 +22,7 @@ $(function() {
     };
     var counts = sequenceCounts(sequence,massesTable);
     var sequenceLabel = sequenceReformat(sequence);
-    var validSting = sequenceValidation(sequence);
-
-
+    var errors = sequenceValidation(sequence);
 
   });
   $("#testData").on('click', function(){
@@ -68,12 +66,18 @@ function sequenceCounts(sequence,masses){
     }
     return allLinks;
   }, {});
+  var basesOut = "";
+  var linksOut = "";
   for (var key in countedBases) {
-    $("#basesCount").append("<p>"+key+" : "+countedBases[key]+", total mass: "+ masses[key]*countedBases[key]+"</p>");
+    basesOut += "<p>"+key+" : "+countedBases[key]+", total mass: "+ masses[key]*countedBases[key]+"</p>";
   }
   for (var key in countedLinks) {
-    $("#linksCount").append("<p>"+key+" : "+countedLinks[key]+"</p>");
+    linksOut += "<p>"+key+" : "+countedLinks[key]+"</p>";
   }
+
+  $("#basesCount").html(basesOut);
+  $("#linksCount").html(linksOut);
+
   return [countedBases,countedLinks];
 };
 
@@ -85,7 +89,7 @@ function sequenceReformat(sequence){
     element[2].toLowerCase() === 'd' ? dna.push(element[1]) : rna.push(element[1]);
   });
   var label = "["+dna.join("")+"]"+rna.join("");
-  $("#sequenceReformatting").append(label);
+  $("#sequenceReformatting").html(label);
 
   return label;
 };
@@ -97,33 +101,51 @@ function sequenceValidation(sequence){
   var sugars = ["d", "r", "e", "m", "y", "l", "k", "o"];
   var linkages = ["o", "s"];
   var seqSplit = sequence.join("").split('');
-  var errors = {};
-  var error = 0;
-  // seqSplit.forEach(function(item){
-  //   errors[item] = 0;
-  // });
-  // var n = seqSplit.length();
-  //
-  // for(var i=0;i<n;i+=4){
-  //   var j=i;
-  //
-  //
-  // }
+  var errors = [];
+  var errorFlag = 0;
 
-  sequence.forEach(function(item){
-    if(modifiers.indexOf(item[0]) < 0 )
-      error++;
-    if(bases.indexOf(item[1]) < 0)
-      error++;
-    if(sugars.indexOf(item[2]) < 0)
-      error++;
-    if(linkages.indexOf(item[3]) < 0)
-      error++;
+  seqSplit.forEach(function(item,i){
+    errors[i] = 0;
   });
 
-  if(error > 0)
-    $("#sequenceValidation").html("Error in the sequence");
-  // console.log(errors);
+  sequence.forEach(function(item,i){
+    if(modifiers.indexOf(item[0]) < 0 ){
+      errors[4*i+0] = "modifier not correct";
+      errorFlag++;
+    }
+    if(bases.indexOf(item[1]) < 0){
+      errors[4*i+1] = "base not correct";
+      errorFlag++;
+    }
+    if(sugars.indexOf(item[2]) < 0){
+      errors[4*i+2] = "sugar not correct";
+      errorFlag++;
+    }
+    if(linkages.indexOf(item[3]) < 0 && item[3]){
+      errors[4*i+3] = "linkage not correct";
+      errorFlag++;
+    }
+  });
 
-  return error;
+  var sequenceOutput = "";
+
+  seqSplit.forEach(function(item,i){
+    sequenceOutput += errors[i] === 0 ? item : "<code>"+item+'</code>';
+  });
+
+  $("#sequenceValidation").html('<p class="sequenceOutput">'+sequenceOutput+'</p>');
+
+  if(errorFlag > 0){
+    errorFlag === 1 ? $("#sequenceValidation").append("<p>There is 1 error</p>") :
+    $("#sequenceValidation").append("<p>There are " + errorFlag + " errors</p>");
+    errors.forEach(function(item,i){
+      item !== 0 ? $("#sequenceValidation").append("<p>position: " + (i+1) + " there is a " + item) : '';
+    });
+  }
+  else{
+    $(".sequenceOutput").addClass('text-success');
+    $("#sequenceValidation").append('<p>Sequence correct!</p>');
+  }
+
+  return errorFlag;
 };
